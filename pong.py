@@ -2,12 +2,14 @@ import pygame
 import sys
 import random
 from pygame.locals import *
-from paddle import Paddle
+from paddle import *
 import ball
 
 # Set up window
 WINDOWWIDTH = 800
 WINDOWHEIGHT = 500
+BALLSPEED = 3
+PADDLESPEED = 5
 
 # ball class
 # score class
@@ -21,9 +23,14 @@ pygame.init()
 
 window_surface = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT))
 pygame.display.set_caption('Pong No Wallzz')
-top_p_paddle = Paddle(window_surface, 0, 90, 20, False)
-side_p_paddle = Paddle(window_surface, 0, 20, 130, True)
-bottom_p_paddle = Paddle(window_surface, 0, 90, WINDOWHEIGHT - 90, False)
+p_top_paddle = HorizontalPaddle(90, 20, 100, 10, window_surface)
+p_bottom_paddle = HorizontalPaddle(90, WINDOWHEIGHT - 90, 100, 10, window_surface)
+p_side_paddle = VerticalPaddle(20, 130, 10, 100, window_surface)
+
+move_left = move_right = move_up = move_down = False
+
+pygame.mixer.music.load('House_short.ogg')
+pygame.mixer.music.play(-1)
 
 
 def draw_dashed_line():
@@ -48,12 +55,9 @@ def initialize_screen():
     draw_score(window_surface, 'Player: ', 30, WINDOWHEIGHT - 60)
     draw_score(window_surface, 'Computer: ', WINDOWWIDTH - 300, WINDOWHEIGHT - 60)
 
-    top_p_paddle.draw()
-    side_p_paddle.draw()
-    bottom_p_paddle.draw()
-
-    pygame.mixer.music.load('House_short.ogg')
-    pygame.mixer.music.play(-1)
+    p_top_paddle.draw()
+    p_side_paddle.draw()
+    p_bottom_paddle.draw()
 
     pygame.display.update()
 
@@ -67,9 +71,41 @@ def play_game():
             if event.type == QUIT:
                 pygame.quit()
                 sys.exit()
+            if event.type == KEYDOWN or event.type == KEYUP:
+                if event.key == K_LEFT or event.key == K_a:
+                    if p_top_paddle.x > 0:
+                        p_top_paddle.move_left()
+                        p_bottom_paddle.move_left()
+                if event.key == K_RIGHT or event.key == K_d:
+                    if p_top_paddle.x < WINDOWWIDTH:
+                        p_top_paddle.move_right()
+                        p_bottom_paddle.move_right()
+                if event.key == K_UP or event.key == K_w:
+                    if p_side_paddle.y > 0:
+                        p_side_paddle.move_up()
+                if event.key == K_DOWN or event.key == K_s:
+                    if p_side_paddle.y < WINDOWHEIGHT - p_side_paddle.height:
+                        p_side_paddle.move_down()
+                if event.key == K_ESCAPE:
+                    pygame.quit()
+                    sys.exit()
+            # if event.type == KEYUP:
+            #     if event.key == K_ESCAPE:
+            #         pygame.quit()
+            #         sys.exit()
+            #     if event.key == K_LEFT or event.key == K_a:
+            #         p_top_paddle.move_left()
+            #         p_bottom_paddle.move_left()
+            #     if event.key == K_RIGHT or event.key == K_d:
+            #         p_top_paddle.move_right()
+            #         p_bottom_paddle.move_right()
+            #     if event.key == K_UP or event.key == K_w:
+            #         p_side_paddle.move_up()
+            #     if event.key == K_DOWN or event.key == K_s:
+            #         p_side_paddle.move_down()
 
-            # if event.type == KEYDOWN:
-                # Update paddles to move down 1 unit in pos
+        initialize_screen()
+        pygame.display.update()
 
 
 play_game()

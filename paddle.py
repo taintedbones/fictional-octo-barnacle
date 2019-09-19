@@ -1,23 +1,60 @@
 import pygame
 import random
 
+WHITE = (255, 255, 255)
 
-class Paddle:
-    def __init__(self, surface, velocity, start_left_pos, start_top_pos, on_side):
+
+class VerticalPaddle:
+    def __init__(self, x, y, width, height, surface):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.velocity = 5
+        self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
         self.surface = surface
-        self.bg_color = (255, 255, 255)
-        self.width = 200
-        self.height = 10
-        self.on_side = on_side
-        if on_side:
-            self.rect = pygame.Rect(start_left_pos, start_top_pos, self.height, self.width)
-        else:
-            self.rect = pygame.Rect(start_left_pos, start_top_pos, self.width, self.height)
-        self.surface_rect = surface.get_rect()
-        self.velocity = velocity
 
-    def update_pos(self, left_pos, top_pos):
-        self.rect.move(left_pos, top_pos)
+    def move_up(self):
+        self.y -= self.velocity
+        self.rect.y = self.y
+
+    def move_down(self):
+        self.y += self.velocity
+        self.rect.y = self.y
 
     def draw(self):
-        pygame.draw.rect(self.surface, self.bg_color, self.rect)
+        pygame.draw.rect(self.surface, WHITE, (self.x, self.y, self.width, self.height))
+
+    def reset(self, x, y):
+        self.x = x
+        self.y = y
+        self.rect.x = x
+        self.rect.y = y
+
+
+class HorizontalPaddle:
+    def __init__(self, x, y, width, height, surface):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.velocity = 5
+        self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
+        self.surface = surface
+
+    def move_left(self):
+        self.x -= self.velocity
+        self.rect.x = self.x
+
+    def move_right(self):
+        self.x += self.velocity
+        self.rect.x = self.x
+
+    def draw(self):
+        pygame.draw.rect(self.surface, WHITE, (self.x, self.y, self.width, self.height))
+
+    def reset(self, x, y):
+        self.x = x
+        self.y = y
+        self.rect.x = x
+        self.rect.y = y
