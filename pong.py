@@ -4,16 +4,15 @@ import random
 from pygame.locals import *
 from paddle import *
 from ball import *
+from score import *
 
 # Set up window
 WINDOWWIDTH = 800
 WINDOWHEIGHT = 500
 BALLSPEED = 3
 PADDLESPEED = 5
-
-# ball class
-# score class
-# paddle class
+WINNINGSCORE = 2
+in_play = True
 
 # Color constants
 WHITE = (255, 255, 255)
@@ -30,6 +29,13 @@ p_top_paddle = HorizontalPaddle(90, 20, 100, 10, window_surface)
 p_bottom_paddle = HorizontalPaddle(90, WINDOWHEIGHT - 90, 100, 10, window_surface)
 p_side_paddle = VerticalPaddle(20, 130, 10, 100, window_surface)
 
+c_top_paddle = HorizontalPaddle(WINDOWWIDTH - 150, 20, 100, 10, window_surface)
+c_bottom_paddle = HorizontalPaddle(WINDOWWIDTH - 150, WINDOWHEIGHT - 90, 100, 10, window_surface)
+c_side_paddle = VerticalPaddle(WINDOWWIDTH - 30, 130, 10, 100, window_surface)
+
+p_score = Score(30, WINDOWHEIGHT - 60, 'Player', window_surface)
+c_score = Score(WINDOWWIDTH - 300, WINDOWHEIGHT - 60, 'Computer', window_surface)
+
 move_left = move_right = move_up = move_down = False
 
 pygame.mixer.music.load('House_short.ogg')
@@ -42,25 +48,41 @@ def draw_dashed_line():
         pygame.draw.rect(window_surface, WHITE, (WINDOWWIDTH // 2 - 5, y, dash_width, 15), 0)
 
 
-def draw_score(surface, text, x, y):
-    font = pygame.font.Font(None, 35)
-    text_render = font.render(text, True, WHITE, BLACK)
+def check_scores():
+    game_over = False
 
-    text_rect = text_render.get_rect()
-    text_rect.centerx = x + 100
-    text_rect.centery = y + 30
-    surface.blit(text_render, text_rect)
+    if p_score.current_score == WINNINGSCORE:
+        text = 'You won!'
+        game_over = True
+    elif c_score.current_score == WINNINGSCORE:
+        text = 'You lose!'
+        game_over = True
+
+    if game_over:
+        in_play = False
+        p_score.reset()
+        c_score.reset()
+        window_surface.fill(BLACK)
+        font = pygame.font.Font(None, 35)
+        game_over_msg = font.render(text, True, WHITE)
+        window_surface.blit(game_over_msg, window_surface.get_rect())
+        pygame.display.update()
 
 
 def update_screen():
     window_surface.fill(BLACK)
     draw_dashed_line()
-    draw_score(window_surface, 'Player: ', 30, WINDOWHEIGHT - 60)
-    draw_score(window_surface, 'Computer: ', WINDOWWIDTH - 300, WINDOWHEIGHT - 60)
+
+    p_score.draw()
+    c_score.draw()
 
     p_top_paddle.draw()
     p_side_paddle.draw()
     p_bottom_paddle.draw()
+
+    c_top_paddle.draw()
+    c_side_paddle.draw()
+    c_bottom_paddle.draw()
 
     ball.draw()
     ball.move()
@@ -71,8 +93,23 @@ def update_screen():
 def play_game():
     update_screen()
 
+    h_paddles = []
+    v_paddles = []
+
+    h_paddles.append(p_top_paddle)
+    h_paddles.append(p_bottom_paddle)
+    h_paddles.append(c_top_paddle)
+    h_paddles.append(c_bottom_paddle)
+    v_paddles.append(p_side_paddle)
+    v_paddles.append(c_side_paddle)
+
+
+
     # Runs game loop
     while True:
+
+        check_scores()
+
         for event in pygame.event.get():
             if event.type == QUIT:
                 pygame.quit()
@@ -96,6 +133,31 @@ def play_game():
                     pygame.quit()
 
         update_screen()
+        c_top_paddle.get_move(ball.rect)
+        c_bottom_paddle.get_move(ball.rect)
+        c_side_paddle.get_move(ball.rect)
+
+        ball.draw()
+        ball.move()
+        ball.collision(h_paddles, v_paddles)
+        scored_reset, scorer = ball.reset()
+
+        if scored_reset:
+            if scorer == 'Player':
+                p_score.scored()
+            elif scorer == 'Computer':
+                c_score.scored()
+
+            p_top_paddle.reset()
+            p_bottom_paddle.reset()
+            p_side_paddle.reset()
+            c_top_paddle.reset()
+            c_bottom_paddle.reset()
+            c_side_paddle.reset()
+            update_screen()
+
+
+
         pygame.display.update()
 
 
